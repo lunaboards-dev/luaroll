@@ -114,4 +114,4 @@ for k, v in pairs(packages) do
 end
 of:write("}\n")
 of:write(main)
-of:write(string.format("require(%q)\n", args.main))
+of:write(string.format("return require(%q)\n", args.main))
