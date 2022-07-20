@@ -29,7 +29,9 @@ local et = setmetatable({
     require = irequire
 }, {__index=_G})
 et._G = et
-return load(lzss_decompress(roll_files[roll[pkg]]), roll_files[pkg], "t", et)
+local rv = load(lzss_decompress(roll_files[roll[pkg]]), roll_files[pkg], "t", et)()
+cache[pkg] = rv
+return rv
 end
 ]=]
 
@@ -130,7 +132,8 @@ of:write("}\n")
 of:write(main)
 if args.overwrite_require then
     of:write(overwrite)
+    of:write(string.format("return irequire(%q)\n", args.main))
 else
     of:write(searcher)
+    of:write(string.format("return require(%q)\n", args.main))
 end
-of:write(string.format("return require(%q)\n", args.main))
