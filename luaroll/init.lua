@@ -29,7 +29,7 @@ local et = setmetatable({
     require = irequire
 }, {__index=_G})
 et._G = et
-return load(lzss_decompress(roll[pkg]), roll_files[pkg], "t", et)
+return load(lzss_decompress(roll_files[roll[pkg]]), roll_files[pkg], "t", et)
 end
 ]=]
 
