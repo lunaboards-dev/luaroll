@@ -14,3 +14,14 @@ table.insert(package.searchers, 1, function(pkg)
     if not roll[pkg] then return string.format("no field roll[\"%s\"]", pkg) end
     return load(lzss_decompress(roll[pkg]), roll_files[pkg])
 end)
+
+local cache = {}
+local function irequire(pkg)
+    if cache[pkg] then return cache[pkg] end
+    if not roll[pkg] then return require(pkg) end
+    local et = setmetatable({
+        require = irequire
+    }, {__index=_G})
+    et._G = et
+    return load(lzss_decompress(roll[pkg]), roll_files[pkg], "t", et)
+end

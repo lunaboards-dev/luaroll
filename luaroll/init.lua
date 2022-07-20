@@ -13,11 +13,24 @@ c=c..g
 d=h(d..g,-4^6)end
 end
 return c end
-
+]=]
+local searcher = [=[
 table.insert(package.searchers, 1, function(pkg)
 if not roll[pkg] then return string.format("no field roll[\"%s\"]", pkg) end
 return load(lzss_decompress(roll_files[roll[pkg]]), roll[pkg])
 end)
+]=]
+local overwrite = [=[
+local cache = {}
+local function irequire(pkg)
+if cache[pkg] then return cache[pkg] end
+if not roll[pkg] then return require(pkg) end
+local et = setmetatable({
+    require = irequire
+}, {__index=_G})
+et._G = et
+return load(lzss_decompress(roll[pkg]), roll_files[pkg], "t", et)
+end
 ]=]
 
 assert(lzss.decompress(lzss.compress(main)) == main, "Internal compressor error")
@@ -43,6 +56,7 @@ assert(lzss.decompress(load("return "..tostr(lzss.compress(main)))()) == main, "
 local parser = argparse("luaroll", "LuaRoll", "Rolls several scripts into a single one.")
 parser:option("-m --main", "Sets the path that gets loaded initially."):default("init")
 parser:option("-o --output", "Output file"):default("roll.lua")
+parser:option("-r --overwrite-require", "Overwrites the require function instead of adding a searcher.")
 parser:argument("files", "A file or directory to add."):args "+"
 local args = parser:parse()
 
@@ -50,7 +64,7 @@ local of
 if args.output == "-" then
     of = io.stdout
 else
-    of = io.open(args.output, "wb")
+    of = assert(io.open(args.output, "wb"))
 end
 
 local files = {}
@@ -81,7 +95,7 @@ local function add_package(basepkg, path)
             packages[basepkg] = packages[basepkg..".init"]
         end
     elseif lfs.attributes(path, "mode") == "file" then
-        local f = io.open(path, "rb")
+        local f = assert(io.open(path, "rb"))
         local d = f:read("*a")
         f:close()
         files["="..path] = lzss.compress(d)
@@ -114,4 +128,9 @@ for k, v in pairs(packages) do
 end
 of:write("}\n")
 of:write(main)
+if args.overwrite_require then
+    of:write(overwrite)
+else
+    of:write(searcher)
+end
 of:write(string.format("return require(%q)\n", args.main))
