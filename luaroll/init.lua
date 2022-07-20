@@ -56,7 +56,7 @@ assert(lzss.decompress(load("return "..tostr(lzss.compress(main)))()) == main, "
 local parser = argparse("luaroll", "LuaRoll", "Rolls several scripts into a single one.")
 parser:option("-m --main", "Sets the path that gets loaded initially."):default("init")
 parser:option("-o --output", "Output file"):default("roll.lua")
-parser:option("-r --overwrite-require", "Overwrites the require function instead of adding a searcher.")
+parser:flag("-r --overwrite-require", "Overwrites the require function instead of adding a searcher.")
 parser:argument("files", "A file or directory to add."):args "+"
 local args = parser:parse()
 
