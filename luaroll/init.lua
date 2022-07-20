@@ -22,14 +22,17 @@ end)
 ]=]
 local overwrite = [=[
 local cache = {}
+local global
 local function irequire(pkg)
 if cache[pkg] then return cache[pkg] end
 if not roll[pkg] then return require(pkg) end
-local et = setmetatable({
+if not global then
+global = setmetatable({
     require = irequire
 }, {__index=_G})
-et._G = et
-local rv = load(lzss_decompress(roll_files[roll[pkg]]), roll_files[pkg], "t", et)()
+global._G = global
+end
+local rv = load(lzss_decompress(roll_files[roll[pkg]]), roll[pkg], "t", global)()
 cache[pkg] = rv
 return rv
 end
