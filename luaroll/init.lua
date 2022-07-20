@@ -23,12 +23,15 @@ end)
 local overwrite = [=[
 local cache = {}
 local global
+local larg
+if not arg then larg = table.pack(...) end
 local function irequire(pkg)
 if cache[pkg] then return cache[pkg] end
 if not roll[pkg] then return require(pkg) end
 if not global then
 global = setmetatable({
-    require = irequire
+    require = irequire,
+    arg = larg
 }, {__index=_G})
 global._G = global
 end
